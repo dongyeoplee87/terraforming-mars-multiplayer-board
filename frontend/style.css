@@ -2,6 +2,9 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    /* 모바일 터치 최적화 */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-touch-callout: none;
 }
 
 body {
@@ -9,6 +12,13 @@ body {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     min-height: 100vh;
     padding: 20px;
+    /* 모바일에서 텍스트 선택 방지 */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* 터치 스크롤 부드럽게 */
+    -webkit-overflow-scrolling: touch;
 }
 
 #app {
@@ -37,11 +47,18 @@ body {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    transition: background 0.3s;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.2);
 }
 
 .game-settings button:hover {
     background: #45a049;
+}
+
+.game-settings button:active {
+    background: #3d8b40;
+    transform: scale(0.95);
 }
 
 .game-settings label {
@@ -57,6 +74,8 @@ body {
     border: 2px solid #ddd;
     font-size: 14px;
     cursor: pointer;
+    touch-action: manipulation;
+    min-height: 44px;
 }
 
 /* Generation 컨트롤 */
@@ -92,14 +111,22 @@ body {
     cursor: pointer;
     font-size: 28px;
     font-weight: bold;
-    transition: all 0.3s;
+    transition: all 0.2s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 165, 0, 0.3);
 }
 
 .next-generation-btn:hover {
     background: #FFA500;
     transform: scale(1.1);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.next-generation-btn:active {
+    background: #FFA500;
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* 게임 컨테이너 */
@@ -146,12 +173,14 @@ body {
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.2s;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(214, 52, 71, 0.3);
 }
 
 .undo-button:hover:not(:disabled) {
@@ -177,11 +206,18 @@ body {
     border-radius: 5px;
     transition: all 0.2s;
     display: inline-block;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
 }
 
 .player-name:hover {
     background: #f0f0f0;
     color: #007bff;
+}
+
+.player-name:active {
+    background: #e0e0e0;
+    transform: scale(0.98);
 }
 
 .player-name-input {
@@ -193,6 +229,10 @@ body {
     padding: 5px 15px;
     outline: none;
     min-width: 200px;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 /* 상단 컨트롤 */
@@ -239,11 +279,19 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(51, 51, 51, 0.2);
 }
 
 .counter button:hover {
     background: #333;
     color: white;
+}
+
+.counter button:active {
+    background: #222;
+    color: white;
+    transform: scale(0.9);
 }
 
 /* 리소스 그리드 */
@@ -268,10 +316,16 @@ body {
     color: #000;
     cursor: pointer;
     transition: transform 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
 }
 
 .resource-header:hover {
     transform: scale(1.02);
+}
+
+.resource-header:active {
+    transform: scale(0.98);
 }
 
 .resource-header h3 {
@@ -320,12 +374,20 @@ body {
     cursor: pointer;
     transition: all 0.2s;
     font-weight: bold;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.2);
 }
 
 .resource-production button:hover {
     background: #333;
     color: white;
     transform: scale(1.1);
+}
+
+.resource-production button:active {
+    background: #222;
+    color: white;
+    transform: scale(1.05);
 }
 
 /* 계산기 모달 */
@@ -340,6 +402,7 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    touch-action: none;
 }
 
 .calculator-modal {
@@ -359,10 +422,17 @@ body {
     cursor: pointer;
     padding: 5px 10px;
     margin-bottom: 10px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
 }
 
 .back-button:hover {
     text-decoration: underline;
+}
+
+.back-button:active {
+    color: #0056b3;
+    transform: scale(0.95);
 }
 
 .calculator-header {
@@ -404,7 +474,9 @@ body {
     font-weight: bold;
     padding: 20px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(153, 153, 153, 0.3);
 }
 
 .calculator-buttons button:hover {
@@ -413,7 +485,9 @@ body {
 }
 
 .calculator-buttons button:active {
+    background: #c0c0c0;
     transform: scale(0.95);
+    border-color: #777;
 }
 
 .zero-button {
@@ -442,7 +516,9 @@ body {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .spend-button {
@@ -456,6 +532,12 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.spend-button:active {
+    background: #c62828;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .gain-button {
     background: #4CAF50;
     color: white;
@@ -467,10 +549,21 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.gain-button:active {
+    background: #3d8b40;
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* 반응형 디자인 */
-@media (max-width: 1200px) {
+/* 태블릿 landscape 모드 (1024px 이상)에서는 좌우 분할 유지 */
+@media (max-width: 900px) {
     .game-container.two-players {
         grid-template-columns: 1fr;
+    }
+
+    .resources-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
@@ -490,6 +583,14 @@ body {
 
     .production-value {
         font-size: 36px;
+    }
+
+    .generation-control {
+        margin-left: 0;
+    }
+
+    .game-settings {
+        flex-wrap: wrap;
     }
 }
 

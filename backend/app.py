@@ -164,4 +164,6 @@ def reset_game():
     return jsonify(game_state)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # 모든 네트워크 인터페이스에서 접속 가능하도록 host='0.0.0.0' 설정
+    # 이렇게 하면 같은 네트워크의 다른 기기(모바일)에서도 접속 가능
+    app.run(debug=True, host='0.0.0.0', port=5000)

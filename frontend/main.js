@@ -1,6 +1,21 @@
 const { createApp } = Vue;
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// 동적 API URL 설정 - 모바일 접속 시 PC IP로 연결
+const getApiBaseUrl = () => {
+    // 현재 페이지의 호스트를 사용 (모바일에서 PC IP로 접속한 경우)
+    const hostname = window.location.hostname;
+    const port = '5000';
+
+    // localhost인 경우 그대로 사용, 아니면 현재 호스트 사용
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api';
+    } else {
+        return `http://${hostname}:${port}/api`;
+    }
+};
+
+const API_BASE_URL = getApiBaseUrl();
+console.log('API URL:', API_BASE_URL); // 디버깅용
 
 // 계산기 모달 컴포넌트
 const CalculatorModal = {
