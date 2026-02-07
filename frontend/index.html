@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terraforming Mars - Scoreboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 계산기 모달 -->
+        <calculator-modal
+            :show="showCalculator"
+            :resource="calculatorData.resource"
+            :current-value="calculatorData.currentValue"
+            @close="closeCalculator"
+            @spend="handleSpend"
+            @gain="handleGain"
+        ></calculator-modal>
+
+        <!-- 게임 설정 -->
+        <div class="game-settings">
+            <button @click="resetGame">New Game</button>
+            <label>
+                Players:
+                <select v-model.number="playerCount" @change="updatePlayerCount">
+                    <option :value="1">1 Player</option>
+                    <option :value="2">2 Players</option>
+                </select>
+            </label>
+            <div class="generation-control">
+                <label>Generation: <span class="generation-value">{{ currentGeneration }}</span></label>
+                <button class="next-generation-btn" @click="nextGeneration">→</button>
+            </div>
+        </div>
+
+        <!-- 게임 보드 -->
+        <div class="game-container" :class="{ 'two-players': playerCount === 2 }">
+            <!-- Player 1 -->
+            <div class="player-board">
+                <div class="player-board-header">
+                    <h2 v-if="playerCount === 2">
+                        <span v-if="editingPlayerName !== 'player1'"
+                              class="player-name"
+                              @click="startEditingPlayerName('player1')">
+                            {{ gameState.player1.name }}
+                        </span>
+                        <input v-else
+                               v-model="editingNameValue"
+                               @keyup.enter="savePlayerName('player1')"
+                               @keyup.esc="cancelEditingPlayerName"
+                               @blur="savePlayerName('player1')"
+                               class="player-name-input"
+                               autofocus>
+                    </h2>
+                    <h2 v-else>&nbsp;</h2>
+                    <button
+                        class="undo-button"
+                        @click="undoPlayerAction('player1')"
+                        :disabled="playerHistory.player1.length === 0"
+                        title="Undo last action">
+                        ↺
+                    </button>
+                </div>
+
+                <!-- 상단 컨트롤 -->
+                <div class="top-controls">
+                    <div class="control-group">
+                        <label>Terraforming Rating</label>
+                        <div class="counter">
+                            <button @click="updateRating('player1', -1)">−</button>
+                            <span class="value">{{ gameState.player1.terraformingRating }}</span>
+                            <button @click="updateRating('player1', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 리소스 카드 -->
+                <div class="resources-grid">
+                    <resource-card
+                        v-for="resource in resources"
+                        :key="resource.type"
+                        :resource="resource"
+                        :player-data="gameState.player1[resource.type]"
+                        :player-id="'player1'"
+                        @update="updateResource('player1', resource.type, $event)"
+                        @open-calculator="openCalculator"
+                    ></resource-card>
+                </div>
+            </div>
+
+            <!-- Player 2 (2인 플레이시) -->
+            <div class="player-board" v-if="playerCount === 2">
+                <div class="player-board-header">
+                    <h2>
+                        <span v-if="editingPlayerName !== 'player2'"
+                              class="player-name"
+                              @click="startEditingPlayerName('player2')">
+                            {{ gameState.player2.name }}
+                        </span>
+                        <input v-else
+                               v-model="editingNameValue"
+                               @keyup.enter="savePlayerName('player2')"
+                               @keyup.esc="cancelEditingPlayerName"
+                               @blur="savePlayerName('player2')"
+                               class="player-name-input"
+                               autofocus>
+                    </h2>
+                    <button
+                        class="undo-button"
+                        @click="undoPlayerAction('player2')"
+                        :disabled="playerHistory.player2.length === 0"
+                        title="Undo last action">
+                        ↺
+                    </button>
+                </div>
+
+                <!-- 상단 컨트롤 -->
+                <div class="top-controls">
+                    <div class="control-group">
+                        <label>Terraforming Rating</label>
+                        <div class="counter">
+                            <button @click="updateRating('player2', -1)">−</button>
+                            <span class="value">{{ gameState.player2.terraformingRating }}</span>
+                            <button @click="updateRating('player2', 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 리소스 카드 -->
+                <div class="resources-grid">
+                    <resource-card
+                        v-for="resource in resources"
+                        :key="resource.type"
+                        :resource="resource"
+                        :player-data="gameState.player2[resource.type]"
+                        :player-id="'player2'"
+                        @update="updateResource('player2', resource.type, $event)"
+                        @open-calculator="openCalculator"
+                    ></resource-card>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
