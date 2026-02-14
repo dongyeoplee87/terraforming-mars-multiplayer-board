@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import os
@@ -51,6 +51,12 @@ game_state = {
     },
     'playerCount': 3
 }
+
+# 루트 경로에서 index.html 서빙
+@app.route('/')
+def index():
+    """메인 페이지 제공"""
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/game-state', methods=['GET'])
 def get_game_state():
