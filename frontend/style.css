@@ -26,6 +26,19 @@ body {
     margin: 0 auto;
 }
 
+/* 디버그 패널 */
+.debug-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #0f0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
 /* 게임 설정 */
 .game-settings {
     background: white;

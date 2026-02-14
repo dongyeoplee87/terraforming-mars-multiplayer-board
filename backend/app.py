@@ -1,8 +1,19 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+import os
 
-app = Flask(__name__)
-CORS(app)
+app = Flask(__name__, static_folder='../frontend', static_url_path='')
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+# Socket.IO 초기화 - CORS 설정 강화
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    logger=True,
+    engineio_logger=True,
+    async_mode='threading'
+)
 
 # 게임 상태 저장 (간단한 프로토타입용 메모리 저장)
 game_state = {
@@ -42,6 +53,7 @@ def update_game_state():
     data = request.json
     if data:
         game_state.update(data)
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state)
 
 @app.route('/api/player/<player_id>/resource/<resource_type>', methods=['POST'])
@@ -57,6 +69,7 @@ def update_resource(player_id, resource_type):
         if game_state[player_id][resource_type][resource_category] < 0:
             game_state[player_id][resource_type][resource_category] = 0
 
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state[player_id])
 
 @app.route('/api/player/<player_id>/rating', methods=['POST'])
@@ -70,6 +83,7 @@ def update_rating(player_id):
         if game_state[player_id]['terraformingRating'] < 0:
             game_state[player_id]['terraformingRating'] = 0
 
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state[player_id])
 
 @app.route('/api/player/<player_id>/name', methods=['POST'])
@@ -81,6 +95,7 @@ def update_player_name(player_id):
     if player_id in game_state and new_name:
         game_state[player_id]['name'] = new_name
 
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state[player_id])
 
 @app.route('/api/player/<player_id>/restore', methods=['POST'])
@@ -92,6 +107,7 @@ def restore_player_state(player_id):
         # 전체 상태를 복원
         game_state[player_id].update(data)
 
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state[player_id])
 
 @app.route('/api/generation', methods=['POST'])
@@ -118,6 +134,7 @@ def next_generation():
             # 세대 증가
             player['generation'] += 1
 
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state)
 
 @app.route('/api/player-count', methods=['POST'])
@@ -126,6 +143,7 @@ def set_player_count():
     data = request.json
     count = data.get('count', 1)
     game_state['playerCount'] = count
+    socketio.emit('game_state_update', game_state)
     return jsonify({'playerCount': count})
 
 @app.route('/api/reset', methods=['POST'])
@@ -161,9 +179,21 @@ def reset_game():
         },
         'playerCount': game_state.get('playerCount', 1)
     }
+    socketio.emit('game_state_update', game_state)
     return jsonify(game_state)
+
+# Socket.IO 이벤트 핸들러
+@socketio.on('connect')
+def handle_connect():
+    print(f'Client connected: {request.sid}')
+    # 새로 연결된 클라이언트에게 현재 게임 상태 전송
+    emit('game_state_update', game_state)
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f'Client disconnected: {request.sid}')
 
 if __name__ == '__main__':
     # 모든 네트워크 인터페이스에서 접속 가능하도록 host='0.0.0.0' 설정
     # 이렇게 하면 같은 네트워크의 다른 기기(모바일)에서도 접속 가능
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

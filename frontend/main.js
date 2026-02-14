@@ -17,6 +17,24 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl();
 console.log('API URL:', API_BASE_URL); // 디버깅용
 
+// WebSocket 연결 설정
+const getSocketUrl = () => {
+    const hostname = window.location.hostname;
+    const port = '5000';
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000';
+    } else {
+        return `http://${hostname}:${port}`;
+    }
+};
+
+const SOCKET_URL = getSocketUrl();
+console.log('Socket URL:', SOCKET_URL); // 디버깅용
+
+// Socket.IO 연결
+let socket = null;
+
 // 계산기 모달 컴포넌트
 const CalculatorModal = {
     props: ['resource', 'currentValue', 'show'],
@@ -132,6 +150,12 @@ createApp({
         return {
             playerCount: 1,
             showCalculator: false,
+            showDebugPanel: false,
+            socketIoLoaded: false,
+            socketStatus: 'Not initialized',
+            socketId: null,
+            currentUrl: window.location.href,
+            debugLogs: [],
             editingPlayerName: null, // 'player1', 'player2', or null
             editingNameValue: '',
             // 각 플레이어별 히스토리 스택 (최대 10개)
@@ -215,9 +239,112 @@ createApp({
         }
     },
     async mounted() {
+        this.addDebugLog('App mounted');
+        this.checkSocketIO();
         await this.loadGameState();
+        this.initializeSocket();
     },
     methods: {
+        // 디버그 로그 추가
+        addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            this.debugLogs.unshift(`[${timestamp}] ${message}`);
+            if (this.debugLogs.length > 20) {
+                this.debugLogs.pop();
+            }
+            console.log(message);
+        },
+        // Socket.IO 로드 확인
+        checkSocketIO() {
+            this.socketIoLoaded = typeof io !== 'undefined';
+            this.addDebugLog(`Socket.IO loaded: ${this.socketIoLoaded}`);
+
+            if (!this.socketIoLoaded) {
+                this.socketStatus = '❌ Socket.IO library not loaded';
+                this.addDebugLog('ERROR: Socket.IO script failed to load from CDN');
+                this.addDebugLog('Trying to load from alternative source...');
+
+                // 대안: 동적으로 로드 시도
+                this.loadSocketIOFallback();
+            }
+        },
+        // Socket.IO 대체 로딩
+        loadSocketIOFallback() {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js';
+            script.onload = () => {
+                this.socketIoLoaded = true;
+                this.addDebugLog('✅ Socket.IO loaded from fallback CDN');
+                this.initializeSocket();
+            };
+            script.onerror = () => {
+                this.addDebugLog('❌ Fallback CDN also failed');
+                this.socketStatus = '❌ Cannot load Socket.IO library';
+            };
+            document.head.appendChild(script);
+        },
+        // WebSocket 초기화
+        initializeSocket() {
+            if (!this.socketIoLoaded) {
+                this.addDebugLog('❌ Cannot initialize socket - Socket.IO not loaded');
+                this.socketStatus = '❌ Socket.IO not loaded';
+                return;
+            }
+
+            this.addDebugLog('🔌 Initializing Socket.IO connection to: ' + SOCKET_URL);
+            this.socketStatus = '🔄 Connecting...';
+
+            try {
+                socket = io(SOCKET_URL, {
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionAttempts: 10,
+                    reconnectionDelay: 1000,
+                    timeout: 20000
+                });
+
+                socket.on('connect', () => {
+                    this.socketStatus = '✅ Connected';
+                    this.socketId = socket.id;
+                    this.addDebugLog('✅ WebSocket connected! Socket ID: ' + socket.id);
+                    this.addDebugLog('✅ Transport: ' + socket.io.engine.transport.name);
+                });
+
+                socket.on('connect_error', (error) => {
+                    this.socketStatus = '❌ Connection Error';
+                    this.addDebugLog('❌ Connection error: ' + error.message);
+                });
+
+                socket.on('reconnect_attempt', (attemptNumber) => {
+                    this.socketStatus = '🔄 Reconnecting... (' + attemptNumber + ')';
+                    this.addDebugLog('🔄 Reconnection attempt: ' + attemptNumber);
+                });
+
+                socket.on('disconnect', (reason) => {
+                    this.socketStatus = '⚠️ Disconnected';
+                    this.socketId = null;
+                    this.addDebugLog('⚠️ Disconnected. Reason: ' + reason);
+                });
+
+                // 게임 상태 업데이트 수신
+                socket.on('game_state_update', (data) => {
+                    this.addDebugLog('📥 Received game state update');
+                    // 로컬 상태 업데이트 (히스토리 저장 없이)
+                    if (data.player1) {
+                        this.gameState.player1 = data.player1;
+                    }
+                    if (data.player2) {
+                        this.gameState.player2 = data.player2;
+                    }
+                    if (data.playerCount !== undefined) {
+                        this.playerCount = data.playerCount;
+                    }
+                });
+            } catch (error) {
+                this.socketStatus = '❌ Error';
+                this.addDebugLog('❌ Socket initialization error: ' + error.message);
+            }
+        },
         // 플레이어 상태를 히스토리에 저장
         savePlayerState(playerId) {
             const currentState = JSON.parse(JSON.stringify(this.gameState[playerId]));

@@ -9,7 +9,50 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Socket.IO Client - 로컬 파일 우선, CDN 대체 -->
+    <script>
+        // Socket.IO 로딩 시도
+        (function() {
+            // 1. 로컬 파일 시도
+            var localScript = document.createElement('script');
+            localScript.src = 'socket.io.min.js';
+            localScript.onerror = function() {
+                console.log('Local Socket.IO not found, trying CDN...');
+                // 2. CDN 시도
+                var cdnScript = document.createElement('script');
+                cdnScript.src = 'https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js';
+                cdnScript.onerror = function() {
+                    console.log('Primary CDN failed, trying backup...');
+                    // 3. 백업 CDN 시도
+                    var backupScript = document.createElement('script');
+                    backupScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js';
+                    backupScript.onerror = function() {
+                        console.error('All Socket.IO sources failed!');
+                    };
+                    document.head.appendChild(backupScript);
+                };
+                document.head.appendChild(cdnScript);
+            };
+            document.head.appendChild(localScript);
+        })();
+    </script>
     <div id="app">
+        <!-- 디버그 패널 (모바일용) -->
+        <div class="debug-panel" v-if="showDebugPanel">
+            <div style="background: #000; color: #0f0; padding: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">
+                <div><strong>🔍 Debug Info</strong></div>
+                <div>Socket.IO Loaded: {{ socketIoLoaded ? '✅' : '❌' }}</div>
+                <div>Socket Status: {{ socketStatus }}</div>
+                <div>Socket ID: {{ socketId || 'Not connected' }}</div>
+                <div>URL: {{ currentUrl }}</div>
+                <div>---</div>
+                <div v-for="(log, index) in debugLogs" :key="index" style="font-size: 10px;">
+                    {{ log }}
+                </div>
+            </div>
+            <button @click="showDebugPanel = false" style="width: 100%; padding: 5px; background: #f00; color: #fff;">Close Debug</button>
+        </div>
+
         <!-- 계산기 모달 -->
         <calculator-modal
             :show="showCalculator"
@@ -22,6 +65,7 @@
 
         <!-- 게임 설정 -->
         <div class="game-settings">
+            <button @click="showDebugPanel = !showDebugPanel" style="background: #333; color: #0f0;">🐛 Debug</button>
             <button @click="resetGame">New Game</button>
             <label>
                 Players:
