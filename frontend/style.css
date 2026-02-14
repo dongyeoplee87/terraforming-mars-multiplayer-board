@@ -26,19 +26,6 @@ body {
     margin: 0 auto;
 }
 
-/* 디버그 패널 */
-.debug-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 10000;
-    background: rgba(0, 0, 0, 0.95);
-    border: 2px solid #0f0;
-    max-height: 50vh;
-    overflow-y: auto;
-}
-
 /* 게임 설정 */
 .game-settings {
     background: white;
@@ -153,6 +140,16 @@ body {
     grid-template-columns: 1fr 1fr;
 }
 
+.game-container.three-players {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.game-container.single-player {
+    grid-template-columns: 1fr;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
 /* 플레이어 보드 */
 .player-board {
     background: white;
@@ -169,11 +166,62 @@ body {
 }
 
 .player-board h2 {
-    text-align: center;
+    text-align: left;
     color: #333;
     margin: 0;
     font-size: 24px;
+    flex: 0 0 auto;
+}
+
+.terraforming-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     flex: 1;
+    justify-content: center;
+}
+
+.terraforming-rating label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.terraforming-rating .counter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.terraforming-rating .counter .value {
+    font-size: 24px;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+}
+
+.terraforming-rating .counter button {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    border: 2px solid #333;
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(51, 51, 51, 0.2);
+}
+
+.terraforming-rating .counter button:hover {
+    background: #333;
+    color: white;
+}
+
+.terraforming-rating .counter button:active {
+    background: #222;
+    color: white;
+    transform: scale(0.9);
 }
 
 .undo-button {
@@ -248,65 +296,6 @@ body {
     user-select: text;
 }
 
-/* 상단 컨트롤 */
-.top-controls {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f5f5f5;
-    border-radius: 10px;
-}
-
-.control-group {
-    text-align: center;
-}
-
-.control-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 8px;
-    color: #333;
-}
-
-.counter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.counter .value {
-    font-size: 28px;
-    font-weight: bold;
-    min-width: 50px;
-    text-align: center;
-}
-
-.counter button {
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-    border: 2px solid #333;
-    background: white;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(51, 51, 51, 0.2);
-}
-
-.counter button:hover {
-    background: #333;
-    color: white;
-}
-
-.counter button:active {
-    background: #222;
-    color: white;
-    transform: scale(0.9);
-}
-
 /* 리소스 그리드 */
 .resources-grid {
     display: grid;
@@ -321,16 +310,21 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .resource-header {
-    padding: 15px;
+    padding: 13px;
     text-align: center;
     color: #000;
     cursor: pointer;
     transition: transform 0.2s;
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .resource-header:hover {
@@ -342,45 +336,45 @@ body {
 }
 
 .resource-header h3 {
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 16px;
+    margin-bottom: 9px;
     font-weight: bold;
 }
 
 .resource-main-value {
-    font-size: 72px;
+    font-size: 65px;
     font-weight: bold;
     line-height: 1;
-    margin: 10px 0;
+    margin: 9px 0;
 }
 
 .resource-info {
-    font-size: 13px;
-    margin-top: 8px;
+    font-size: 12px;
+    margin-top: 7px;
     font-weight: 600;
 }
 
 .resource-production {
     background: rgba(255, 255, 255, 0.3);
-    padding: 15px;
+    padding: 13px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 13px;
     border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .production-value {
-    font-size: 48px;
+    font-size: 43px;
     font-weight: bold;
-    min-width: 60px;
+    min-width: 54px;
     text-align: center;
 }
 
 .resource-production button {
-    width: 50px;
-    height: 50px;
-    font-size: 28px;
+    width: 45px;
+    height: 45px;
+    font-size: 25px;
     border: 3px solid #000;
     background: white;
     border-radius: 8px;
@@ -571,23 +565,30 @@ body {
 /* 반응형 디자인 */
 /* 태블릿 landscape 모드 (1024px 이상)에서는 좌우 분할 유지 */
 @media (max-width: 900px) {
-    .game-container.two-players {
+    .game-container.two-players,
+    .game-container.three-players {
         grid-template-columns: 1fr;
     }
 
     .resources-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    .player-board-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .terraforming-rating {
+        order: 3;
+        flex: 1 0 100%;
+        margin-top: 10px;
+    }
 }
 
 @media (max-width: 768px) {
     .resources-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    .top-controls {
-        flex-direction: column;
-        gap: 15px;
     }
 
     .resource-main-value {

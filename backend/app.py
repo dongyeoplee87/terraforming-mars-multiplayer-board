@@ -39,7 +39,18 @@ game_state = {
         'energy': {'production': 0, 'resources': 0},
         'heat': {'production': 0, 'resources': 0}
     },
-    'playerCount': 1
+    'player3': {
+        'name': 'Player 3',
+        'terraformingRating': 14,
+        'generation': 1,
+        'megacredits': {'production': 0, 'resources': 0},
+        'steel': {'production': 0, 'resources': 0},
+        'titanium': {'production': 0, 'resources': 0},
+        'plants': {'production': 0, 'resources': 0},
+        'energy': {'production': 0, 'resources': 0},
+        'heat': {'production': 0, 'resources': 0}
+    },
+    'playerCount': 3
 }
 
 @app.route('/api/game-state', methods=['GET'])
@@ -116,7 +127,7 @@ def next_generation():
     data = request.json
 
     # 모든 플레이어에게 적용
-    for player_id in ['player1', 'player2']:
+    for player_id in ['player1', 'player2', 'player3']:
         if player_id in game_state:
             player = game_state[player_id]
 
@@ -153,6 +164,7 @@ def reset_game():
     # 플레이어 이름 보존
     player1_name = game_state.get('player1', {}).get('name', 'Player 1')
     player2_name = game_state.get('player2', {}).get('name', 'Player 2')
+    player3_name = game_state.get('player3', {}).get('name', 'Player 3')
 
     game_state = {
         'player1': {
@@ -168,6 +180,17 @@ def reset_game():
         },
         'player2': {
             'name': player2_name,
+            'terraformingRating': 14,
+            'generation': 1,
+            'megacredits': {'production': 0, 'resources': 0},
+            'steel': {'production': 0, 'resources': 0},
+            'titanium': {'production': 0, 'resources': 0},
+            'plants': {'production': 0, 'resources': 0},
+            'energy': {'production': 0, 'resources': 0},
+            'heat': {'production': 0, 'resources': 0}
+        },
+        'player3': {
+            'name': player3_name,
             'terraformingRating': 14,
             'generation': 1,
             'megacredits': {'production': 0, 'resources': 0},

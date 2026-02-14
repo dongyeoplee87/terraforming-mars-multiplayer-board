@@ -37,22 +37,6 @@
         })();
     </script>
     <div id="app">
-        <!-- 디버그 패널 (모바일용) -->
-        <div class="debug-panel" v-if="showDebugPanel">
-            <div style="background: #000; color: #0f0; padding: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">
-                <div><strong>🔍 Debug Info</strong></div>
-                <div>Socket.IO Loaded: {{ socketIoLoaded ? '✅' : '❌' }}</div>
-                <div>Socket Status: {{ socketStatus }}</div>
-                <div>Socket ID: {{ socketId || 'Not connected' }}</div>
-                <div>URL: {{ currentUrl }}</div>
-                <div>---</div>
-                <div v-for="(log, index) in debugLogs" :key="index" style="font-size: 10px;">
-                    {{ log }}
-                </div>
-            </div>
-            <button @click="showDebugPanel = false" style="width: 100%; padding: 5px; background: #f00; color: #fff;">Close Debug</button>
-        </div>
-
         <!-- 계산기 모달 -->
         <calculator-modal
             :show="showCalculator"
@@ -65,13 +49,14 @@
 
         <!-- 게임 설정 -->
         <div class="game-settings">
-            <button @click="showDebugPanel = !showDebugPanel" style="background: #333; color: #0f0;">🐛 Debug</button>
             <button @click="resetGame">New Game</button>
             <label>
-                Players:
-                <select v-model.number="playerCount" @change="updatePlayerCount">
-                    <option :value="1">1 Player</option>
-                    <option :value="2">2 Players</option>
+                View:
+                <select v-model="viewMode">
+                    <option value="all">All Players</option>
+                    <option value="player1">Player 1</option>
+                    <option value="player2">Player 2</option>
+                    <option value="player3">Player 3</option>
                 </select>
             </label>
             <div class="generation-control">
@@ -81,11 +66,11 @@
         </div>
 
         <!-- 게임 보드 -->
-        <div class="game-container" :class="{ 'two-players': playerCount === 2 }">
+        <div class="game-container" :class="{ 'single-player': viewMode !== 'all', 'two-players': viewMode === 'all' && playerCount === 2, 'three-players': viewMode === 'all' && playerCount === 3 }">
             <!-- Player 1 -->
-            <div class="player-board">
+            <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player1'">
                 <div class="player-board-header">
-                    <h2 v-if="playerCount === 2">
+                    <h2>
                         <span v-if="editingPlayerName !== 'player1'"
                               class="player-name"
                               @click="startEditingPlayerName('player1')">
@@ -99,7 +84,14 @@
                                class="player-name-input"
                                autofocus>
                     </h2>
-                    <h2 v-else>&nbsp;</h2>
+                    <div class="terraforming-rating">
+                        <label>TR</label>
+                        <div class="counter">
+                            <button @click="updateRating('player1', -1)">−</button>
+                            <span class="value">{{ gameState.player1.terraformingRating }}</span>
+                            <button @click="updateRating('player1', 1)">+</button>
+                        </div>
+                    </div>
                     <button
                         class="undo-button"
                         @click="undoPlayerAction('player1')"
@@ -107,18 +99,6 @@
                         title="Undo last action">
                         ↺
                     </button>
-                </div>
-
-                <!-- 상단 컨트롤 -->
-                <div class="top-controls">
-                    <div class="control-group">
-                        <label>Terraforming Rating</label>
-                        <div class="counter">
-                            <button @click="updateRating('player1', -1)">−</button>
-                            <span class="value">{{ gameState.player1.terraformingRating }}</span>
-                            <button @click="updateRating('player1', 1)">+</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 리소스 카드 -->
@@ -135,8 +115,8 @@
                 </div>
             </div>
 
-            <!-- Player 2 (2인 플레이시) -->
-            <div class="player-board" v-if="playerCount === 2">
+            <!-- Player 2 -->
+            <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player2'">
                 <div class="player-board-header">
                     <h2>
                         <span v-if="editingPlayerName !== 'player2'"
@@ -152,6 +132,14 @@
                                class="player-name-input"
                                autofocus>
                     </h2>
+                    <div class="terraforming-rating">
+                        <label>TR</label>
+                        <div class="counter">
+                            <button @click="updateRating('player2', -1)">−</button>
+                            <span class="value">{{ gameState.player2.terraformingRating }}</span>
+                            <button @click="updateRating('player2', 1)">+</button>
+                        </div>
+                    </div>
                     <button
                         class="undo-button"
                         @click="undoPlayerAction('player2')"
@@ -159,18 +147,6 @@
                         title="Undo last action">
                         ↺
                     </button>
-                </div>
-
-                <!-- 상단 컨트롤 -->
-                <div class="top-controls">
-                    <div class="control-group">
-                        <label>Terraforming Rating</label>
-                        <div class="counter">
-                            <button @click="updateRating('player2', -1)">−</button>
-                            <span class="value">{{ gameState.player2.terraformingRating }}</span>
-                            <button @click="updateRating('player2', 1)">+</button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- 리소스 카드 -->
@@ -182,6 +158,54 @@
                         :player-data="gameState.player2[resource.type]"
                         :player-id="'player2'"
                         @update="updateResource('player2', resource.type, $event)"
+                        @open-calculator="openCalculator"
+                    ></resource-card>
+                </div>
+            </div>
+
+            <!-- Player 3 -->
+            <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player3'">
+                <div class="player-board-header">
+                    <h2>
+                        <span v-if="editingPlayerName !== 'player3'"
+                              class="player-name"
+                              @click="startEditingPlayerName('player3')">
+                            {{ gameState.player3.name }}
+                        </span>
+                        <input v-else
+                               v-model="editingNameValue"
+                               @keyup.enter="savePlayerName('player3')"
+                               @keyup.esc="cancelEditingPlayerName"
+                               @blur="savePlayerName('player3')"
+                               class="player-name-input"
+                               autofocus>
+                    </h2>
+                    <div class="terraforming-rating">
+                        <label>TR</label>
+                        <div class="counter">
+                            <button @click="updateRating('player3', -1)">−</button>
+                            <span class="value">{{ gameState.player3.terraformingRating }}</span>
+                            <button @click="updateRating('player3', 1)">+</button>
+                        </div>
+                    </div>
+                    <button
+                        class="undo-button"
+                        @click="undoPlayerAction('player3')"
+                        :disabled="playerHistory.player3.length === 0"
+                        title="Undo last action">
+                        ↺
+                    </button>
+                </div>
+
+                <!-- 리소스 카드 -->
+                <div class="resources-grid">
+                    <resource-card
+                        v-for="resource in resources"
+                        :key="resource.type"
+                        :resource="resource"
+                        :player-data="gameState.player3[resource.type]"
+                        :player-id="'player3'"
+                        @update="updateResource('player3', resource.type, $event)"
                         @open-calculator="openCalculator"
                     ></resource-card>
                 </div>

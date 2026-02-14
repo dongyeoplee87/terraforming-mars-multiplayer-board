@@ -148,20 +148,19 @@ createApp({
     },
     data() {
         return {
-            playerCount: 1,
+            playerCount: 3,
+            viewMode: 'all',
             showCalculator: false,
-            showDebugPanel: false,
             socketIoLoaded: false,
             socketStatus: 'Not initialized',
             socketId: null,
-            currentUrl: window.location.href,
-            debugLogs: [],
-            editingPlayerName: null, // 'player1', 'player2', or null
+            editingPlayerName: null, // 'player1', 'player2', 'player3', or null
             editingNameValue: '',
             // 각 플레이어별 히스토리 스택 (최대 10개)
             playerHistory: {
                 player1: [],
-                player2: []
+                player2: [],
+                player3: []
             },
             calculatorData: {
                 resource: null,
@@ -182,6 +181,17 @@ createApp({
                 },
                 player2: {
                     name: 'Player 2',
+                    terraformingRating: 14,
+                    generation: 1,
+                    megacredits: { production: 0, resources: 0 },
+                    steel: { production: 0, resources: 0 },
+                    titanium: { production: 0, resources: 0 },
+                    plants: { production: 0, resources: 0 },
+                    energy: { production: 0, resources: 0 },
+                    heat: { production: 0, resources: 0 }
+                },
+                player3: {
+                    name: 'Player 3',
                     terraformingRating: 14,
                     generation: 1,
                     megacredits: { production: 0, resources: 0 },
@@ -247,11 +257,6 @@ createApp({
     methods: {
         // 디버그 로그 추가
         addDebugLog(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            this.debugLogs.unshift(`[${timestamp}] ${message}`);
-            if (this.debugLogs.length > 20) {
-                this.debugLogs.pop();
-            }
             console.log(message);
         },
         // Socket.IO 로드 확인
@@ -336,6 +341,9 @@ createApp({
                     if (data.player2) {
                         this.gameState.player2 = data.player2;
                     }
+                    if (data.player3) {
+                        this.gameState.player3 = data.player3;
+                    }
                     if (data.playerCount !== undefined) {
                         this.playerCount = data.playerCount;
                     }
@@ -380,7 +388,8 @@ createApp({
                 const data = await response.json();
                 this.gameState = {
                     player1: data.player1,
-                    player2: data.player2
+                    player2: data.player2,
+                    player3: data.player3
                 };
                 this.playerCount = data.playerCount;
             } catch (error) {
