@@ -221,6 +221,3 @@ if __name__ == '__main__':
     # 이렇게 하면 같은 네트워크의 다른 기기(모바일)에서도 접속 가능
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, debug=True, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
-else:
-    # 프로덕션 환경 (AWS Elastic Beanstalk, Render 등)
-    # Gunicorn이 이 앱을 실행함
