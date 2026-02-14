@@ -10,16 +10,15 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    logger=True,
-    engineio_logger=True,
-    async_mode='threading'
+    ping_timeout=60,
+    ping_interval=25
 )
 
 # 게임 상태 저장 (간단한 프로토타입용 메모리 저장)
 game_state = {
     'player1': {
         'name': 'Player 1',
-        'terraformingRating': 14,
+        'terraformingRating': 20,
         'generation': 1,
         'megacredits': {'production': 0, 'resources': 0},
         'steel': {'production': 0, 'resources': 0},
@@ -30,7 +29,7 @@ game_state = {
     },
     'player2': {
         'name': 'Player 2',
-        'terraformingRating': 14,
+        'terraformingRating': 20,
         'generation': 1,
         'megacredits': {'production': 0, 'resources': 0},
         'steel': {'production': 0, 'resources': 0},
@@ -41,7 +40,7 @@ game_state = {
     },
     'player3': {
         'name': 'Player 3',
-        'terraformingRating': 14,
+        'terraformingRating': 20,
         'generation': 1,
         'megacredits': {'production': 0, 'resources': 0},
         'steel': {'production': 0, 'resources': 0},
@@ -169,7 +168,7 @@ def reset_game():
     game_state = {
         'player1': {
             'name': player1_name,
-            'terraformingRating': 14,
+            'terraformingRating': 20,
             'generation': 1,
             'megacredits': {'production': 0, 'resources': 0},
             'steel': {'production': 0, 'resources': 0},
@@ -180,7 +179,7 @@ def reset_game():
         },
         'player2': {
             'name': player2_name,
-            'terraformingRating': 14,
+            'terraformingRating': 20,
             'generation': 1,
             'megacredits': {'production': 0, 'resources': 0},
             'steel': {'production': 0, 'resources': 0},
@@ -191,7 +190,7 @@ def reset_game():
         },
         'player3': {
             'name': player3_name,
-            'terraformingRating': 14,
+            'terraformingRating': 20,
             'generation': 1,
             'megacredits': {'production': 0, 'resources': 0},
             'steel': {'production': 0, 'resources': 0},

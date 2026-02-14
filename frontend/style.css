@@ -356,26 +356,26 @@ body {
 
 .resource-production {
     background: rgba(255, 255, 255, 0.3);
-    padding: 13px;
+    padding: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 13px;
+    gap: 10px;
     border-top: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .production-value {
-    font-size: 43px;
+    font-size: 38px;
     font-weight: bold;
-    min-width: 54px;
+    min-width: 48px;
     text-align: center;
 }
 
 .resource-production button {
-    width: 45px;
-    height: 45px;
-    font-size: 25px;
-    border: 3px solid #000;
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    border: 2px solid #000;
     background: white;
     border-radius: 8px;
     cursor: pointer;

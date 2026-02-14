@@ -170,7 +170,7 @@ createApp({
             gameState: {
                 player1: {
                     name: 'Player 1',
-                    terraformingRating: 14,
+                    terraformingRating: 20,
                     generation: 1,
                     megacredits: { production: 0, resources: 0 },
                     steel: { production: 0, resources: 0 },
@@ -181,7 +181,7 @@ createApp({
                 },
                 player2: {
                     name: 'Player 2',
-                    terraformingRating: 14,
+                    terraformingRating: 20,
                     generation: 1,
                     megacredits: { production: 0, resources: 0 },
                     steel: { production: 0, resources: 0 },
@@ -192,7 +192,7 @@ createApp({
                 },
                 player3: {
                     name: 'Player 3',
-                    terraformingRating: 14,
+                    terraformingRating: 20,
                     generation: 1,
                     megacredits: { production: 0, resources: 0 },
                     steel: { production: 0, resources: 0 },
