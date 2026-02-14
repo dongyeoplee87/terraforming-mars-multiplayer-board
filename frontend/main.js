@@ -1,36 +1,51 @@
 const { createApp } = Vue;
 
-// 동적 API URL 설정 - 모바일 접속 시 PC IP로 연결
+// 동적 API URL 설정 - 로컬/모바일/프로덕션 환경 자동 감지
 const getApiBaseUrl = () => {
-    // 현재 페이지의 호스트를 사용 (모바일에서 PC IP로 접속한 경우)
     const hostname = window.location.hostname;
-    const port = '5000';
+    const protocol = window.location.protocol;
+    const port = window.location.port;
 
-    // localhost인 경우 그대로 사용, 아니면 현재 호스트 사용
+    // localhost인 경우 (로컬 개발 환경)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:5000/api';
-    } else {
-        return `http://${hostname}:${port}/api`;
+    }
+    // 프로덕션 환경 (Render 등) - 같은 도메인 사용
+    else if (port === '' || port === '80' || port === '443') {
+        return `${protocol}//${hostname}/api`;
+    }
+    // 모바일 로컬 네트워크 접속 (PC IP로 접속)
+    else {
+        return `${protocol}//${hostname}:5000/api`;
     }
 };
 
 const API_BASE_URL = getApiBaseUrl();
-console.log('API URL:', API_BASE_URL); // 디버깅용
+console.log('[DEBUG] API URL:', API_BASE_URL);
+console.log('[DEBUG] Current location:', window.location.href);
 
 // WebSocket 연결 설정
 const getSocketUrl = () => {
     const hostname = window.location.hostname;
-    const port = '5000';
+    const protocol = window.location.protocol;
+    const port = window.location.port;
 
+    // localhost인 경우 (로컬 개발 환경)
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:5000';
-    } else {
-        return `http://${hostname}:${port}`;
+    }
+    // 프로덕션 환경 (Render 등) - 같은 도메인 사용
+    else if (port === '' || port === '80' || port === '443') {
+        return `${protocol}//${hostname}`;
+    }
+    // 모바일 로컬 네트워크 접속
+    else {
+        return `http://${hostname}:5000`;
     }
 };
 
 const SOCKET_URL = getSocketUrl();
-console.log('Socket URL:', SOCKET_URL); // 디버깅용
+console.log('[DEBUG] Socket URL:', SOCKET_URL);
 
 // Socket.IO 연결
 let socket = null;

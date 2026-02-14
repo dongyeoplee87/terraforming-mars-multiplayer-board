@@ -56,17 +56,20 @@ game_state = {
 @app.route('/')
 def index():
     """메인 페이지 제공"""
+    print('[INFO] Serving index.html')
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/game-state', methods=['GET'])
 def get_game_state():
     """현재 게임 상태 조회"""
+    print('[API] GET /api/game-state')
     return jsonify(game_state)
 
 @app.route('/api/game-state', methods=['POST'])
 def update_game_state():
     """게임 상태 업데이트"""
     data = request.json
+    print(f'[API] POST /api/game-state - data received')
     if data:
         game_state.update(data)
     socketio.emit('game_state_update', game_state)
@@ -78,6 +81,7 @@ def update_resource(player_id, resource_type):
     data = request.json
     resource_category = data.get('category', 'resources')  # 'resources' or 'production'
     change = data.get('change', 0)
+    print(f'[API] POST /api/player/{player_id}/resource/{resource_type} - category={resource_category}, change={change}')
 
     if player_id in game_state and resource_type in game_state[player_id]:
         game_state[player_id][resource_type][resource_category] += change
@@ -213,17 +217,21 @@ def reset_game():
 # Socket.IO 이벤트 핸들러
 @socketio.on('connect')
 def handle_connect():
-    print(f'Client connected: {request.sid}')
+    print(f'[SOCKET] Client connected: {request.sid}')
+    print(f'[SOCKET] Client origin: {request.headers.get("Origin", "unknown")}')
     # 새로 연결된 클라이언트에게 현재 게임 상태 전송
     emit('game_state_update', game_state)
+    print(f'[SOCKET] Sent initial game state to {request.sid}')
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print(f'Client disconnected: {request.sid}')
+    print(f'[SOCKET] Client disconnected: {request.sid}')
 
 if __name__ == '__main__':
     # 로컬 개발 환경
     # 모든 네트워크 인터페이스에서 접속 가능하도록 host='0.0.0.0' 설정
     # 이렇게 하면 같은 네트워크의 다른 기기(모바일)에서도 접속 가능
     port = int(os.environ.get('PORT', 5000))
+    print(f'[INFO] Starting Flask app on port {port}')
+    print(f'[INFO] Static folder: {app.static_folder}')
     socketio.run(app, debug=True, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
