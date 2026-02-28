@@ -57,6 +57,15 @@
                     <option value="player1">Player 1</option>
                     <option value="player2">Player 2</option>
                     <option value="player3">Player 3</option>
+                    <option value="player4">Player 4</option>
+                </select>
+            </label>
+            <label v-if="viewMode === 'all'">
+                Show:
+                <select v-model.number="visiblePlayerCount" @change="updateVisiblePlayerCount">
+                    <option :value="2">2 Players</option>
+                    <option :value="3">3 Players</option>
+                    <option :value="4">4 Players</option>
                 </select>
             </label>
             <div class="generation-control">
@@ -66,7 +75,13 @@
         </div>
 
         <!-- 게임 보드 -->
-        <div class="game-container" :class="{ 'single-player': viewMode !== 'all', 'two-players': viewMode === 'all' && playerCount === 2, 'three-players': viewMode === 'all' && playerCount === 3 }">
+        <div class="game-container" :class="{
+            'single-player': viewMode !== 'all',
+            'one-player': viewMode === 'all' && visiblePlayerCount === 1,
+            'two-players': viewMode === 'all' && visiblePlayerCount === 2,
+            'three-players': viewMode === 'all' && visiblePlayerCount === 3,
+            'four-players': viewMode === 'all' && visiblePlayerCount === 4
+        }">
             <!-- Player 1 -->
             <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player1'">
                 <div class="player-board-header">
@@ -116,7 +131,7 @@
             </div>
 
             <!-- Player 2 -->
-            <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player2'">
+            <div class="player-board" v-if="(viewMode === 'all' && visiblePlayerCount >= 2) || viewMode === 'player2'">
                 <div class="player-board-header">
                     <h2>
                         <span v-if="editingPlayerName !== 'player2'"
@@ -164,7 +179,7 @@
             </div>
 
             <!-- Player 3 -->
-            <div class="player-board" v-if="viewMode === 'all' || viewMode === 'player3'">
+            <div class="player-board" v-if="(viewMode === 'all' && visiblePlayerCount >= 3) || viewMode === 'player3'">
                 <div class="player-board-header">
                     <h2>
                         <span v-if="editingPlayerName !== 'player3'"
@@ -206,6 +221,54 @@
                         :player-data="gameState.player3[resource.type]"
                         :player-id="'player3'"
                         @update="updateResource('player3', resource.type, $event)"
+                        @open-calculator="openCalculator"
+                    ></resource-card>
+                </div>
+            </div>
+
+            <!-- Player 4 -->
+            <div class="player-board" v-if="(viewMode === 'all' && visiblePlayerCount >= 4) || viewMode === 'player4'">
+                <div class="player-board-header">
+                    <h2>
+                        <span v-if="editingPlayerName !== 'player4'"
+                              class="player-name"
+                              @click="startEditingPlayerName('player4')">
+                            {{ gameState.player4.name }}
+                        </span>
+                        <input v-else
+                               v-model="editingNameValue"
+                               @keyup.enter="savePlayerName('player4')"
+                               @keyup.esc="cancelEditingPlayerName"
+                               @blur="savePlayerName('player4')"
+                               class="player-name-input"
+                               autofocus>
+                    </h2>
+                    <div class="terraforming-rating">
+                        <label>TR</label>
+                        <div class="counter">
+                            <button @click="updateRating('player4', -1)">−</button>
+                            <span class="value">{{ gameState.player4.terraformingRating }}</span>
+                            <button @click="updateRating('player4', 1)">+</button>
+                        </div>
+                    </div>
+                    <button
+                        class="undo-button"
+                        @click="undoPlayerAction('player4')"
+                        :disabled="playerHistory.player4.length === 0"
+                        title="Undo last action">
+                        ↺
+                    </button>
+                </div>
+
+                <!-- 리소스 카드 -->
+                <div class="resources-grid">
+                    <resource-card
+                        v-for="resource in resources"
+                        :key="resource.type"
+                        :resource="resource"
+                        :player-data="gameState.player4[resource.type]"
+                        :player-id="'player4'"
+                        @update="updateResource('player4', resource.type, $event)"
                         @open-calculator="openCalculator"
                     ></resource-card>
                 </div>

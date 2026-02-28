@@ -11,7 +11,8 @@ socketio = SocketIO(
     app,
     cors_allowed_origins="*",
     ping_timeout=60,
-    ping_interval=25
+    ping_interval=25,
+    async_mode='threading'
 )
 
 # 게임 상태 저장 (간단한 프로토타입용 메모리 저장)
@@ -49,7 +50,19 @@ game_state = {
         'energy': {'production': 0, 'resources': 0},
         'heat': {'production': 0, 'resources': 0}
     },
-    'playerCount': 3
+    'player4': {
+        'name': 'Player 4',
+        'terraformingRating': 20,
+        'generation': 1,
+        'megacredits': {'production': 0, 'resources': 0},
+        'steel': {'production': 0, 'resources': 0},
+        'titanium': {'production': 0, 'resources': 0},
+        'plants': {'production': 0, 'resources': 0},
+        'energy': {'production': 0, 'resources': 0},
+        'heat': {'production': 0, 'resources': 0}
+    },
+    'playerCount': 4,
+    'visiblePlayerCount': 4
 }
 
 # 루트 경로에서 index.html 서빙
@@ -136,7 +149,7 @@ def next_generation():
     data = request.json
 
     # 모든 플레이어에게 적용
-    for player_id in ['player1', 'player2', 'player3']:
+    for player_id in ['player1', 'player2', 'player3', 'player4']:
         if player_id in game_state:
             player = game_state[player_id]
 
@@ -166,6 +179,17 @@ def set_player_count():
     socketio.emit('game_state_update', game_state)
     return jsonify({'playerCount': count})
 
+@app.route('/api/visible-player-count', methods=['POST'])
+def set_visible_player_count():
+    """All players 모드에서 표시할 플레이어 수 설정"""
+    data = request.json
+    count = data.get('count', 4)
+    if 1 <= count <= 4:
+        game_state['visiblePlayerCount'] = count
+        socketio.emit('game_state_update', game_state)
+        return jsonify({'visiblePlayerCount': count})
+    return jsonify({'error': 'Invalid count'}), 400
+
 @app.route('/api/reset', methods=['POST'])
 def reset_game():
     """게임 상태 초기화"""
@@ -174,6 +198,7 @@ def reset_game():
     player1_name = game_state.get('player1', {}).get('name', 'Player 1')
     player2_name = game_state.get('player2', {}).get('name', 'Player 2')
     player3_name = game_state.get('player3', {}).get('name', 'Player 3')
+    player4_name = game_state.get('player4', {}).get('name', 'Player 4')
 
     game_state = {
         'player1': {
@@ -209,7 +234,19 @@ def reset_game():
             'energy': {'production': 0, 'resources': 0},
             'heat': {'production': 0, 'resources': 0}
         },
-        'playerCount': game_state.get('playerCount', 1)
+        'player4': {
+            'name': player4_name,
+            'terraformingRating': 20,
+            'generation': 1,
+            'megacredits': {'production': 0, 'resources': 0},
+            'steel': {'production': 0, 'resources': 0},
+            'titanium': {'production': 0, 'resources': 0},
+            'plants': {'production': 0, 'resources': 0},
+            'energy': {'production': 0, 'resources': 0},
+            'heat': {'production': 0, 'resources': 0}
+        },
+        'playerCount': game_state.get('playerCount', 4),
+        'visiblePlayerCount': game_state.get('visiblePlayerCount', 4)
     }
     socketio.emit('game_state_update', game_state)
     return jsonify(game_state)

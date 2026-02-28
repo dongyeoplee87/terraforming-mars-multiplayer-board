@@ -163,19 +163,21 @@ createApp({
     },
     data() {
         return {
-            playerCount: 3,
+            playerCount: 4,
+            visiblePlayerCount: 4,
             viewMode: 'all',
             showCalculator: false,
             socketIoLoaded: false,
             socketStatus: 'Not initialized',
             socketId: null,
-            editingPlayerName: null, // 'player1', 'player2', 'player3', or null
+            editingPlayerName: null, // 'player1', 'player2', 'player3', 'player4', or null
             editingNameValue: '',
             // 각 플레이어별 히스토리 스택 (최대 10개)
             playerHistory: {
                 player1: [],
                 player2: [],
-                player3: []
+                player3: [],
+                player4: []
             },
             calculatorData: {
                 resource: null,
@@ -207,6 +209,17 @@ createApp({
                 },
                 player3: {
                     name: 'Player 3',
+                    terraformingRating: 20,
+                    generation: 1,
+                    megacredits: { production: 0, resources: 0 },
+                    steel: { production: 0, resources: 0 },
+                    titanium: { production: 0, resources: 0 },
+                    plants: { production: 0, resources: 0 },
+                    energy: { production: 0, resources: 0 },
+                    heat: { production: 0, resources: 0 }
+                },
+                player4: {
+                    name: 'Player 4',
                     terraformingRating: 20,
                     generation: 1,
                     megacredits: { production: 0, resources: 0 },
@@ -359,8 +372,14 @@ createApp({
                     if (data.player3) {
                         this.gameState.player3 = data.player3;
                     }
+                    if (data.player4) {
+                        this.gameState.player4 = data.player4;
+                    }
                     if (data.playerCount !== undefined) {
                         this.playerCount = data.playerCount;
+                    }
+                    if (data.visiblePlayerCount !== undefined) {
+                        this.visiblePlayerCount = data.visiblePlayerCount;
                     }
                 });
             } catch (error) {
@@ -404,9 +423,12 @@ createApp({
                 this.gameState = {
                     player1: data.player1,
                     player2: data.player2,
-                    player3: data.player3
+                    player3: data.player3,
+                    player4: data.player4
                 };
-                this.playerCount = data.playerCount;
+                this.playerCount = data.playerCount !== undefined ? data.playerCount : 4;
+                this.visiblePlayerCount = data.visiblePlayerCount !== undefined ? data.visiblePlayerCount : 4;
+                console.log('Loaded game state:', { playerCount: this.playerCount, visiblePlayerCount: this.visiblePlayerCount });
             } catch (error) {
                 console.error('Failed to load game state:', error);
             }
@@ -458,6 +480,15 @@ createApp({
                 // 모든 플레이어의 상태 업데이트
                 this.gameState.player1 = updatedState.player1;
                 this.gameState.player2 = updatedState.player2;
+                this.gameState.player3 = updatedState.player3;
+                this.gameState.player4 = updatedState.player4;
+
+                // Generation이 넘어가면 모든 플레이어의 Undo 히스토리 초기화
+                this.playerHistory.player1 = [];
+                this.playerHistory.player2 = [];
+                this.playerHistory.player3 = [];
+                this.playerHistory.player4 = [];
+                console.log('Generation advanced - Undo history cleared');
             } catch (error) {
                 console.error('Failed to advance generation:', error);
             }
@@ -471,6 +502,17 @@ createApp({
                 });
             } catch (error) {
                 console.error('Failed to update player count:', error);
+            }
+        },
+        async updateVisiblePlayerCount() {
+            try {
+                await fetch(`${API_BASE_URL}/visible-player-count`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: this.visiblePlayerCount })
+                });
+            } catch (error) {
+                console.error('Failed to update visible player count:', error);
             }
         },
         async resetGame() {
